@@ -28,9 +28,9 @@ const Register = () => {
 
   const validForm = () => {
 
-  } 
+  }
 
-  const handleSubmit = async(event) => {
+  const handleSubmit = async (event) => {
     try {
       event.preventDefault();
       if (validForm) {
@@ -42,6 +42,18 @@ const Register = () => {
       console.error(error.message);
     }
   };
+
+  const ErrorList = props => {
+    const { errors } = props;
+    return (
+      Object.keys(errors).filter(item => {
+        if (errors[item]) {
+          console.error(item);
+        }
+        return <Message.Item>Adrain</Message.Item>
+      })
+    )
+  }
 
   const handleChange = event => {
     event.persist();
@@ -64,7 +76,7 @@ const Register = () => {
 
   return (
     <Grid textAlign="center" verticalAlign="middle" className="app">
-      <Grid.Column style={{ maxWidth: 450}}>
+      <Grid.Column style={{ maxWidth: 450 }}>
         <Header as="h3" icon color="orange" textAlign="center">
           <Icon name="puzzle piece" color="orange">
             Register for DevChat
@@ -78,21 +90,21 @@ const Register = () => {
             <Form.Input fluid error={formState.errors.passwordConfirmation && formState.touched.passwordConfirmation} name="passwordConfirmation" icon="repeat" iconPosition="left" placeholder="password confirmation" onChange={handleChange} type="password" value={formState.passwordConfirmation}></Form.Input>
             <Message
               color="red"
-              >
+            >
               <Message.Header>Errors</Message.Header>
               <Message.List>
-                <Message.Item></Message.Item>
+                <ErrorList errors={formState.errors}></ErrorList>
               </Message.List>
             </Message>
-            <Button 
-            color="orange" 
-            fluid size="large" 
-            disabled={
-              !(formState.errors.username &&
-              formState.errors.email &&
-              formState.errors.password &&
-              formState.errors.passwordConfirmation)
-            }>
+            <Button
+              color="orange"
+              fluid size="large"
+              disabled={
+                !(formState.errors.username &&
+                  formState.errors.email &&
+                  formState.errors.password &&
+                  formState.errors.passwordConfirmation)
+              }>
               Submit
             </Button>
           </Segment>
