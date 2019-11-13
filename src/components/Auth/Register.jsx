@@ -13,10 +13,10 @@ const Register = () => {
       passwordConfirmation: ''
     },
     errors: {
-      username: false,
-      email: false,
-      password: false,
-      passwordConfirmation: false
+      username: true,
+      email: true,
+      password: true,
+      passwordConfirmation: true
     },
     touched: {
       username: false,
@@ -26,34 +26,21 @@ const Register = () => {
     }
   });
 
-  const validForm = () => {
-
-  }
+  const validPassword = ({password, passwordConfirmation}) => password === passwordConfirmation;
 
   const handleSubmit = async (event) => {
     try {
       event.preventDefault();
-      if (validForm) {
-
+      if (validPassword(formState.values)) {
+        const createdUser = await firebase.auth().createUserWithEmailAndPassword(formState.values.email, formState.values.password);
+        console.log(createdUser);
+      } else {
+        console.log('Contraseñas no coinciden');
       }
-      const createdUser = await firebase.auth().createUserWithEmailAndPassword(formState.email, formState.password);
-      console.log(createdUser);
     } catch (error) {
       console.error(error.message);
     }
   };
-
-  const ErrorList = props => {
-    const { errors } = props;
-    return (
-      Object.keys(errors).filter(item => {
-        if (errors[item]) {
-          console.error(item);
-        }
-        return <Message.Item>Adrain</Message.Item>
-      })
-    )
-  }
 
   const handleChange = event => {
     event.persist();
@@ -65,7 +52,7 @@ const Register = () => {
       },
       errors: {
         ...formState.errors,
-        [event.target.name]: event.target.value.length === 0 ? true : false,
+        [event.target.name]: event.target.value.length === 0 ? false : true,
       },
       touched: {
         ...formState.touched,
@@ -84,26 +71,18 @@ const Register = () => {
         </Header>
         <Form size="large" onSubmit={handleSubmit}>
           <Segment stacked>
-            <Form.Input fluid error={formState.errors.username && formState.touched.username} name="username" icon="user" iconPosition="left" placeholder="username" onChange={handleChange} type="text" value={formState.username}></Form.Input>
-            <Form.Input fluid error={formState.errors.email && formState.touched.email} name="email" icon="mail" iconPosition="left" placeholder="Email address" onChange={handleChange} type="email" value={formState.email}></Form.Input>
-            <Form.Input fluid error={formState.errors.password && formState.touched.password} name="password" icon="lock" iconPosition="left" placeholder="password" onChange={handleChange} type="password" value={formState.password}></Form.Input>
-            <Form.Input fluid error={formState.errors.passwordConfirmation && formState.touched.passwordConfirmation} name="passwordConfirmation" icon="repeat" iconPosition="left" placeholder="password confirmation" onChange={handleChange} type="password" value={formState.passwordConfirmation}></Form.Input>
-            <Message
-              color="red"
-            >
-              <Message.Header>Errors</Message.Header>
-              <Message.List>
-                <ErrorList errors={formState.errors}></ErrorList>
-              </Message.List>
-            </Message>
+            <Form.Input fluid error={!formState.errors.username && formState.touched.username} name="username" icon="user" iconPosition="left" placeholder="username" onChange={handleChange} type="text" value={formState.username}></Form.Input>
+            <Form.Input fluid error={!formState.errors.email && formState.touched.email} name="email" icon="mail" iconPosition="left" placeholder="Email address" onChange={handleChange} type="email" value={formState.email}></Form.Input>
+            <Form.Input fluid error={!formState.errors.password && formState.touched.password} name="password" icon="lock" iconPosition="left" placeholder="password" onChange={handleChange} type="password" value={formState.password}></Form.Input>
+            <Form.Input fluid error={!formState.errors.passwordConfirmation && formState.touched.passwordConfirmation} name="passwordConfirmation" icon="repeat" iconPosition="left" placeholder="password confirmation" onChange={handleChange} type="password" value={formState.passwordConfirmation}></Form.Input>
             <Button
               color="orange"
               fluid size="large"
               disabled={
-                !(formState.errors.username &&
-                  formState.errors.email &&
-                  formState.errors.password &&
-                  formState.errors.passwordConfirmation)
+                (!formState.errors.username || !formState.touched.username) ||
+                (!formState.errors.email || !formState.touched.email) ||
+                (!formState.errors.password || !formState.touched.password) ||
+                (!formState.errors.passwordConfirmation || !formState.touched.passwordConfirmation)
               }>
               Submit
             </Button>
