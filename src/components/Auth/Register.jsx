@@ -46,6 +46,10 @@ const Register = () => {
     }
   };
 
+  const handleInputError = (errors, filter) => {
+    return errors.some(error => error.toLowerCase().includes(filter)) ? 'error': ''
+  }
+
   const handleSubmit = async (event) => {
     try {
       event.preventDefault();
@@ -107,9 +111,9 @@ const Register = () => {
         <Form size="large" onSubmit={handleSubmit}>
           <Segment stacked>
             <Form.Input fluid error={!formState.errors.username && formState.touched.username} name="username" icon="user" iconPosition="left" placeholder="username" onChange={handleChange} type="text" value={formState.username}></Form.Input>
-            <Form.Input fluid error={!formState.errors.email && formState.touched.email} name="email" icon="mail" iconPosition="left" placeholder="Email address" onChange={handleChange} type="email" value={formState.email}></Form.Input>
-            <Form.Input fluid error={!formState.errors.password && formState.touched.password} name="password" icon="lock" iconPosition="left" placeholder="password" onChange={handleChange} type="password" value={formState.password}></Form.Input>
-            <Form.Input fluid error={!formState.errors.passwordConfirmation && formState.touched.passwordConfirmation} name="passwordConfirmation" icon="repeat" iconPosition="left" placeholder="password confirmation" onChange={handleChange} type="password" value={formState.passwordConfirmation}></Form.Input>
+            <Form.Input fluid className={handleInputError(formState.messageErrors, 'email')} error={!formState.errors.email && formState.touched.email} name="email" icon="mail" iconPosition="left" placeholder="Email address" onChange={handleChange} type="email" value={formState.email}></Form.Input>
+            <Form.Input fluid className={handleInputError(formState.messageErrors, 'password')} error={!formState.errors.password && formState.touched.password} name="password" icon="lock" iconPosition="left" placeholder="password" onChange={handleChange} type="password" value={formState.password}></Form.Input>
+            <Form.Input fluid className={handleInputError(formState.messageErrors, 'password')} error={!formState.errors.passwordConfirmation && formState.touched.passwordConfirmation} name="passwordConfirmation" icon="repeat" iconPosition="left" placeholder="password confirmation" onChange={handleChange} type="password" value={formState.passwordConfirmation}></Form.Input>
             <Button
               color="orange"
               className={formState.loading ? 'loading' : ''}
