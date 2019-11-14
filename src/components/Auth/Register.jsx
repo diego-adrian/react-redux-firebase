@@ -23,22 +23,57 @@ const Register = () => {
       email: false,
       password: false,
       passwordConfirmation: false
-    }
+    },
+    messageErrors: [],
+    loading: false
   });
 
-  const validPassword = ({password, passwordConfirmation}) => password === passwordConfirmation;
+  const validPassword = ({password, passwordConfirmation}) => {
+    if (password.length < 6 || passwordConfirmation.length < 6) {
+      setFormState(formState => ({
+        ...formState,
+        messageErrors: formState.messageErrors.concat('Password less 6 than 6 characters')
+      }));
+      return false;
+    } else if (password !== passwordConfirmation) {
+      setFormState(formState => ({
+        ...formState,
+        messageErrors: formState.messageErrors.concat('Passwords do not match')
+      }));
+      return false;
+    } else {
+      return true;
+    }
+  };
 
   const handleSubmit = async (event) => {
     try {
       event.preventDefault();
+      setFormState(formState => ({
+        ...formState,
+        messageErrors: [],
+        loading: false
+      }));
       if (validPassword(formState.values)) {
+        setFormState(formState => ({
+          ...formState,
+          loading: true
+        }));
         const createdUser = await firebase.auth().createUserWithEmailAndPassword(formState.values.email, formState.values.password);
+        setFormState(formState => ({
+          ...formState,
+          loading: false
+        }));
         console.log(createdUser);
       } else {
-        console.log('Contraseñas no coinciden');
+        return;
       }
     } catch (error) {
-      console.error(error.message);
+      setFormState(formState => ({
+        ...formState,
+        loading: false,
+        messageErrors: formState.messageErrors.concat(error.message)
+      }));
     }
   };
 
@@ -77,17 +112,27 @@ const Register = () => {
             <Form.Input fluid error={!formState.errors.passwordConfirmation && formState.touched.passwordConfirmation} name="passwordConfirmation" icon="repeat" iconPosition="left" placeholder="password confirmation" onChange={handleChange} type="password" value={formState.passwordConfirmation}></Form.Input>
             <Button
               color="orange"
+              className={formState.loading ? 'loading' : ''}
               fluid size="large"
               disabled={
                 (!formState.errors.username || !formState.touched.username) ||
                 (!formState.errors.email || !formState.touched.email) ||
                 (!formState.errors.password || !formState.touched.password) ||
-                (!formState.errors.passwordConfirmation || !formState.touched.passwordConfirmation)
+                (!formState.errors.passwordConfirmation || !formState.touched.passwordConfirmation) || formState.loading
               }>
               Submit
             </Button>
           </Segment>
         </Form>
+        {
+          formState.messageErrors.length > 0 && (
+            <Message 
+              error
+              header="Errors"
+              list={formState.messageErrors}>
+            </Message>
+          )
+        }
         <Message>
           Already a user? <Link to="/login">Login</Link>
         </Message>
