@@ -124,7 +124,7 @@ const Register = () => {
     <Grid textAlign="center" verticalAlign="middle" className="app">
       <Grid.Column style={{ maxWidth: 450 }}>
         <Header as="h4" icon color="orange" textAlign="center">
-          <Icon name="puzzle piece" color="orange">
+          <Icon name="puzzle piece" color="orange" className="flex">
             Register for DevChat
           </Icon>
         </Header>

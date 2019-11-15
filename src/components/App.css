@@ -5,3 +5,10 @@ body,
   background: #EEE;
   padding: 1em;
 }
+
+.flex {
+  display: flex !important;
+  flex-direction: column !important;
+  text-align: center;
+  justify-content: center;
+}

@@ -35,6 +35,12 @@ const Register = () => {
         messageErrors: [],
         loading: true
       }));
+      const signedInUser = await firebase.auth().signInWithEmailAndPassword(formState.values.email, formState.values.password);
+      setFormState(formState => ({
+        ...formState,
+        loading: false
+      }));
+      console.log(signedInUser);
     } catch (error) {
       setFormState(formState => ({
         ...formState,
@@ -67,7 +73,7 @@ const Register = () => {
     <Grid textAlign="center" verticalAlign="middle" className="app">
       <Grid.Column style={{ maxWidth: 450 }}>
         <Header as="h4" icon color="violet" textAlign="center">
-          <Icon name="code branch" color="violet">
+          <Icon name="code branch" color="violet" className="flex">
             Login to DevChat
           </Icon>
         </Header>
