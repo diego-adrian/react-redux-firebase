@@ -5,7 +5,6 @@ import { Grid, Form, Segment, Button, Header, Message, Icon } from 'semantic-ui-
 import firebase from '../../firebase';
 
 const Register = () => {
-
   const [formState, setFormState] = useState({
     values: {
       username: '',
@@ -85,6 +84,7 @@ const Register = () => {
           photoURL: `http://gravatar.com/avatar/${md5(createdUser.user.email)}?d=identicon` 
         });
         await saveUser(createdUser);
+        console.log(createdUser);
         setFormState(formState => ({
           ...formState,
           loading: false
