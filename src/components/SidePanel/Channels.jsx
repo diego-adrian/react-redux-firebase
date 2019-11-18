@@ -9,9 +9,9 @@ const Channels = () => {
     <Menu.Menu style={{ paddingBottom: '2em'}}>
       <Menu.Item>
         <span>
-          <icon name="exchange"/> CHANNELS
-        </span>
-        ({state.channels}) <Icon name="add"/>
+          <Icon name="exchange"/> CHANNELS
+        </span>{" "}
+        ({state.channels.length}) <Icon name="add"/>
       </Menu.Item>
     </Menu.Menu>
   )
