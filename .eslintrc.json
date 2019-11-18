@@ -1,0 +1,33 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true
+  },
+  "extends": ["react-app"],
+  "globals": {
+    "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly"
+  },
+  "parser": "babel-eslint",
+  "parserOptions": { // Como desea que analice su codigo
+    "ecmaVersion": 2018,
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "sourceType": "module"
+  },
+  "plugins": [
+    "react-hooks"
+  ],
+  "rules": {
+    "no-unused-vars": 0,
+    "no-console": 0,
+    "no-empty": 0,
+    "jsx-a11y/anchor-is-valid": 0,
+    "eslint-disable-next-line": 0,
+    "react-hooks/exhaustive-deps": 0,
+    "no-useless-constructor": 0,
+    "no-undef": 0,
+    "react/jsx-no-target-blank": 0
+  }
+}

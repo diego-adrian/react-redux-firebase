@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+
 import React, { useEffect } from 'react';
 import { Route, Switch, withRouter} from 'react-router-dom';
 import { connect } from 'react-redux';
@@ -5,7 +7,12 @@ import firebase from '../firebase';
 import App from '../components/App';
 import Login from '../components/Auth/Login';
 import Register from '../components/Auth/Register';
+import Spinner from '../Spinner';
 import { setUser } from '../actions';
+
+const mapStateFromProps = state => ({
+  isLoading: state.user.isLoading
+});
 
 const Pages = props => {
   useEffect(() => {
@@ -22,8 +29,9 @@ const Pages = props => {
       }
     };
     autenticated();
-  }, [props, props.history]);
+  }, [props.isLoading]);
   return(
+    props.isLoading ? <Spinner/> : 
     <Switch>
       <Route path="/" exact component={App}></Route>
       <Route path="/login" component={Login}></Route>
@@ -32,4 +40,4 @@ const Pages = props => {
   )
 }
 
-export default withRouter(connect(null, { setUser })(Pages));
+export default withRouter(connect(mapStateFromProps, { setUser })(Pages));
