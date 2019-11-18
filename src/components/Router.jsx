@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
 import { Route, Switch, withRouter} from 'react-router-dom';
+import { connect } from 'react-redux';
 import firebase from '../firebase';
 import App from '../components/App';
 import Login from '../components/Auth/Login';
 import Register from '../components/Auth/Register';
+import { setUser } from '../actions';
 
 const Pages = props => {
   useEffect(() => {
@@ -11,6 +13,7 @@ const Pages = props => {
       try {
         await firebase.auth().onAuthStateChanged((user) => {
           if (user) {
+            props.setUser(user);
             props.history.push('/');
           }
         });
@@ -19,7 +22,7 @@ const Pages = props => {
       }
     };
     autenticated();
-  }, [props.history]);
+  }, [props, props.history]);
   return(
     <Switch>
       <Route path="/" exact component={App}></Route>
@@ -29,4 +32,4 @@ const Pages = props => {
   )
 }
 
-export default withRouter(Pages);
+export default withRouter(connect(null, { setUser })(Pages));
