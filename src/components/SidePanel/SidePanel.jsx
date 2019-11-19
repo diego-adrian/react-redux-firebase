@@ -1,9 +1,11 @@
 import React from 'react';
 import { Menu } from 'semantic-ui-react';
+import { connect } from 'react-redux';
 import UserPanel from './UserPanel';
 import Channels from './Channels';
 
-const SidePanel = () => {
+const SidePanel = props => {
+  const { user } = props;
   return (
     <Menu
       size="large"
@@ -12,10 +14,14 @@ const SidePanel = () => {
       vertical
       style={{ background: '#4c3c4c', fontSize: '1.2rem'}}
     >
-      <UserPanel/>
-      <Channels/>
+      <UserPanel user={user}/>
+      <Channels user={user}/>
     </Menu>
   )
 };
 
-export default SidePanel;
+const mapStateToProps = ({ user }) => ({
+  user: user.currentUser
+});
+
+export default connect(mapStateToProps)(SidePanel);
