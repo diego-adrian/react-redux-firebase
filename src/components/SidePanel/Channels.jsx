@@ -1,13 +1,17 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, Fragment, useEffect } from 'react';
 import {Menu, Icon, Modal, Form, Input, Button} from 'semantic-ui-react';
+import { connect } from 'react-redux';
+import { setCurrentChannel } from '../../actions';
 import firebase from '../../firebase';
 
-const Channels = ({ user }) => {
-  
+const Channels = props => {
+  const { user } = props;
   const [state, setState] = useState({
     channels: [],
     modal: false,
+    firstLoad: true,
+    activeChannel: '',
     channelRef: firebase.database().ref('channels'),
     values: {
       channelName: '',
@@ -19,6 +23,18 @@ const Channels = ({ user }) => {
     }
   });
 
+  const setFirstChannel = channels => {
+    const firstChannel = channels[0];
+    if (state.firstLoad && channels.length > 0) {
+      props.setCurrentChannel(firstChannel);
+      setActiveChannel(firstChannel);
+    }
+    setState(state => ({
+      ...state,
+      firstLoad: false
+    }));
+  }
+
   const addListeners = () => {
     let loadedChannels = [];
     state.channelRef.on('child_added', snap => {
@@ -26,8 +42,8 @@ const Channels = ({ user }) => {
       setState(state => ({
         ...state,
         channels: loadedChannels
-      }))
-      console.log(loadedChannels);
+      }));
+      setFirstChannel(loadedChannels);
     })
   };
 
@@ -81,6 +97,18 @@ const Channels = ({ user }) => {
     }
   };
 
+  const setActiveChannel = channel => {
+    setState(state => ({
+      ...state,
+      activeChannel: channel ? channel.id : ''
+    }))
+  }
+
+  const handleCurrentChannel = channel => {
+    setActiveChannel(channel);
+    props.setCurrentChannel(channel);
+  }
+
   const closeModal = () => {
     setState(state => ({
       ...state,
@@ -107,9 +135,10 @@ const Channels = ({ user }) => {
     state.channels.length > 0 && state.channels.map(channel => (
         <Menu.Item
           key={channel.id}
-          onClick={() => console.log(channel)}
+          onClick={() => handleCurrentChannel(channel)}
           name={channel.name}
           style={{ opacity: 0.7}}
+          active={channel.id === state.activeChannel}
         >
           # {channel.name}
         </Menu.Item>
@@ -178,4 +207,4 @@ const Channels = ({ user }) => {
   )
 };
 
-export default Channels;
+export default connect(null, { setCurrentChannel })(Channels);
