@@ -1,8 +1,10 @@
-import React, { useState, Fragment } from 'react';
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useState, Fragment, useEffect } from 'react';
 import {Menu, Icon, Modal, Form, Input, Button} from 'semantic-ui-react';
 import firebase from '../../firebase';
 
 const Channels = ({ user }) => {
+  
   const [state, setState] = useState({
     channels: [],
     modal: false,
@@ -16,6 +18,25 @@ const Channels = ({ user }) => {
       channelDetails: true
     }
   });
+
+  const addListeners = () => {
+    let loadedChannels = [];
+    state.channelRef.on('child_added', snap => {
+      loadedChannels.push(snap.val());
+      setState(state => ({
+        ...state,
+        channels: loadedChannels
+      }))
+      console.log(loadedChannels);
+    })
+  };
+
+  useEffect(() => {
+    addListeners();
+    return () => {
+      console.log('UNMOUNTED CHANNELS');
+    }
+  }, []);
 
   const addChannel = async(event) => {
     try {
@@ -82,6 +103,20 @@ const Channels = ({ user }) => {
     }));
   };
 
+  const DisplayChannels = () => (
+    state.channels.length > 0 && state.channels.map(channel => (
+        <Menu.Item
+          key={channel.id}
+          onClick={() => console.log(channel)}
+          name={channel.name}
+          style={{ opacity: 0.7}}
+        >
+          # {channel.name}
+        </Menu.Item>
+      )
+    )
+  );
+
   const handleChange = event => {
     event.persist();
     setState(state => ({
@@ -106,6 +141,7 @@ const Channels = ({ user }) => {
           </span>{" "}
           ({state.channels.length}) <Icon name="add" style={{ cursor: 'pointer'}} onClick={openModal}/>
         </Menu.Item>
+        <DisplayChannels/>
       </Menu.Menu>
       <Modal basic open={state.modal} onClose={closeModal} closeOnDimmerClick={false}>
         <Modal.Header>Add a Channel</Modal.Header>
