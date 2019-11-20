@@ -15,6 +15,7 @@ body,
 
 /* Messages.js */
 .messages {
+  max-width: 100% !important;
   height: calc(100vh - 280px);
   overflow-y: scroll;
 }
