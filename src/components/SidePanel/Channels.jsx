@@ -35,6 +35,10 @@ const Channels = props => {
     }));
   }
 
+  const removeListeners = () => {
+    state.channelRef.off();
+  }
+
   const addListeners = () => {
     let loadedChannels = [];
     state.channelRef.on('child_added', snap => {
@@ -50,6 +54,7 @@ const Channels = props => {
   useEffect(() => {
     addListeners();
     return () => {
+      removeListeners();
       console.log('UNMOUNTED CHANNELS');
     }
   }, []);
