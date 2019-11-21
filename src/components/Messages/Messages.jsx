@@ -1,10 +1,14 @@
-import React, { Fragment } from 'react';
+/* eslint-disable no-unused-vars */
+import React, { Fragment, useState } from 'react';
 import { Segment, Comment } from 'semantic-ui-react';
-import { connect } from 'react-redux';
 import MessagesHeader from './MessagesHeader';
 import MessageForm from './MessageForm';
+import firebase from '../../firebase';
 
-const Messages = () => {
+const Messages = ({ currentUser, currentChannel }) => {
+  const [state, setState] = useState({
+    messagesRef: firebase.database().ref('messages')
+  })
   return (
     <Fragment>
       <MessagesHeader/>
@@ -12,13 +16,9 @@ const Messages = () => {
         <Comment.Group className="messages">
         </Comment.Group>
       </Segment>
-      <MessageForm/>
+      <MessageForm currentChannel={currentChannel} messagesRef={state.messagesRef} currentUser={currentUser}/>
     </Fragment>
   )
 };
 
-const mapStateToProps = ({ user }) => ({
-  user: user.currentUser
-});
-
-export default connect(mapStateToProps)(Messages);
+export default Messages;
