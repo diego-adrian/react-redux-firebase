@@ -38,6 +38,12 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel }) => {
         loading: false,
         values: {
           message: ''
+        },
+        touched: {
+          message: false
+        },
+        errors: {
+          message: true
         }
       }));
     } catch (error) {
