@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import {Segment, Button, Input} from 'semantic-ui-react';
+import uuidv4 from 'uuid/v4';
 import firebase from '../../firebase';
 import FileModal from './FileModal';
 
 const MessageForm = ({ currentUser, messagesRef, currentChannel }) => {
   const [state, setState] = useState({
+    storageRef: firebase.database().ref(),
     loading: false,
     modal: false,
+    uploadState: '',
+    percentUploaded: 0,
+    uploadTask: null,
     values: {
       message: ''
     },
@@ -17,6 +22,25 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel }) => {
       message: false
     }
   });
+
+  const uploadFile = (file, metadata) => {
+    console.log(file, metadata);
+    const pathToUpload = currentChannel.id;
+    const ref = messagesRef;
+    const filePath = `chat/public/${uuidv4()}.jpg`;
+    state.uploadTask.on('state_changed', snap => {
+      const percentUploaded = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+      setState(state => ({
+        ...state,
+        percentUploaded: percentUploaded
+      }))
+    });
+    setState(state => ({
+      ...state,
+      uploadState: 'uploading',
+      uploadTask: state.storageRef.child(filePath).put(file, metadata)
+    }));
+  }
 
   const openModal = () => {
     setState(state => ({
@@ -119,6 +143,7 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel }) => {
         <FileModal
           modal={state.modal}
           closeModal={closeModal}
+          uploadFile={uploadFile}
         />
       </Button.Group>
     </Segment>
