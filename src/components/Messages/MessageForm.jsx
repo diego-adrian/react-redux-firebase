@@ -37,7 +37,6 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel }) => {
 
   const uploadFile = async (file, metadata) => {
     try {
-      console.log(file, metadata);
       const pathToUpload = currentChannel.id;
       const ref = messagesRef;
       const filePath = `chat/public/${uuidv4()}.jpg`;
@@ -91,7 +90,6 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel }) => {
     } else {
       obj.content = state.values.message;
     }
-    console.log(obj);
     const newMessage = {
       ...obj,
       timestamp: firebase.database.ServerValue.TIMESTAMP,
@@ -101,7 +99,6 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel }) => {
         name: currentUser.displayName
       }
     };
-    console.log(newMessage);
     return newMessage;
   };
 
