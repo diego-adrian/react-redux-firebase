@@ -7,15 +7,22 @@ import MessageForm from './MessageForm';
 import Message from './Message';
 import firebase from '../../firebase';
 
+let timer;
+
 const Messages = ({ currentUser, currentChannel }) => {
   const [state, setState] = useState({
     messages: [],
     messagesLoading: true,
-    messagesRef: firebase.database().ref('messages')
+    countUniqueUsers: 0,
+    messagesRef: firebase.database().ref('messages'),
+    searchLoading: false,
+    searchTerm: null,
+    typing: false,
+    searchResults: []
   });
 
-  const DisplayMessages = () => (
-    state.messages.length > 0 && state.messages.map(message => (
+  const DisplayMessages = ({messages}) => (
+    messages.length > 0 && messages.map(message => (
       <Message
         key={message.timestamp}
         message={message}
@@ -28,14 +35,47 @@ const Messages = ({ currentUser, currentChannel }) => {
     let loadedMessages = [];
     state.messagesRef.child(channelId).on('child_added', snap => {
       loadedMessages.push(snap.val());
+      const countUniqueUsers = loadedMessages.reduce((newArray, message) => {
+        if (!newArray.includes(message.user.name)) {
+          newArray.push(message.user.name);
+        }
+        return newArray;
+      }, []);
       setState(state => ({
         ...state,
         messages: loadedMessages,
-        messagesLoading: false
+        messagesLoading: false,
+        countUniqueUsers: countUniqueUsers.length
       }))
     })
   };
 
+  const handleSearchMessages = event => {
+    event.persist();
+    const channelMessages = [...state.messages];
+    const regex = new RegExp(event.target.value, 'gi');
+    const searchResults = channelMessages.reduce((container, message) => {
+      if ((message.content && message.content.match(regex)) || message.user.name.match(regex)) {
+        container.push(message);
+      }
+      return container;
+    }, []);
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      setState(state => ({
+        ...state,
+        typing: false
+      }));
+    }, 1000);
+    setState(state => ({
+      ...state,
+      typing: true,
+      searchLoading: true,
+      searchTerm: event.target.value.length > 0 ? true : false,
+      searchResults: searchResults
+    }));
+  };
+  
   const addListeners = channelId => {
     addMessageListener(channelId);
   };
@@ -47,14 +87,16 @@ const Messages = ({ currentUser, currentChannel }) => {
     return () => {
       console.log('UNMOUNT MESSAGES');
     }
-  }, [])
+  }, []);
 
   return (
     <Fragment>
-      <MessagesHeader channel={currentChannel}/>
+      <MessagesHeader channel={currentChannel} countUniqueUsers={state.countUniqueUsers} handleSearchMessages={handleSearchMessages} typing={state.typing}/>
       <Segment style={{ marginRight: 0, paddingRight: 0}}>
         <Comment.Group className="messages">
-          <DisplayMessages/>
+          {
+            state.searchTerm ? <DisplayMessages messages={state.searchResults} /> : <DisplayMessages messages={state.messages} />
+          }
         </Comment.Group>
       </Segment>
       <MessageForm currentChannel={currentChannel} messagesRef={state.messagesRef} currentUser={currentUser}/>
