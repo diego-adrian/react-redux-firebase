@@ -3,6 +3,7 @@ import { Menu } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import UserPanel from './UserPanel';
 import Channels from './Channels';
+import DirectMessage from './DirectMessage';
 
 const SidePanel = props => {
   const { user } = props;
@@ -16,6 +17,7 @@ const SidePanel = props => {
     >
       <UserPanel user={user}/>
       <Channels user={user}/>
+      <DirectMessage user={user}/>
     </Menu>
   )
 };
