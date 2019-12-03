@@ -6,11 +6,11 @@ import FileModal from './FileModal';
 
 const MessageForm = ({ currentUser, messagesRef, currentChannel }) => {
   const [state, setState] = useState({
-    storageRef: firebase.database().ref(),
+    storageRef: firebase.storage().ref(),
     loading: false,
     modal: false,
-    uploadState: '',
     percentUploaded: 0,
+    uploadState: 'uploading',
     uploadTask: null,
     values: {
       message: ''
@@ -23,23 +23,51 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel }) => {
     }
   });
 
-  const uploadFile = (file, metadata) => {
-    console.log(file, metadata);
-    const pathToUpload = currentChannel.id;
-    const ref = messagesRef;
-    const filePath = `chat/public/${uuidv4()}.jpg`;
-    state.uploadTask.on('state_changed', snap => {
-      const percentUploaded = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+  const sendFileMessage = async (fileUrl, ref, pathToUpload) => {
+    try {
+      await ref.child(pathToUpload).push().set(createMessage(fileUrl));
       setState(state => ({
         ...state,
-        percentUploaded: percentUploaded
-      }))
-    });
-    setState(state => ({
-      ...state,
-      uploadState: 'uploading',
-      uploadTask: state.storageRef.child(filePath).put(file, metadata)
-    }));
+        uploadState: 'done'
+      }));
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
+  const uploadFile = async (file, metadata) => {
+    try {
+      console.log(file, metadata);
+      const pathToUpload = currentChannel.id;
+      const ref = messagesRef;
+      const filePath = `chat/public/${uuidv4()}.jpg`;
+      const uploadTask = state.storageRef.child(filePath).put(file, metadata);
+      uploadTask.on('state_changed', snap => {
+        const percentUploaded = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+        setState(state => ({
+          ...state,
+          percentUploaded: percentUploaded
+        }))
+      }, () => {
+        setState(state => ({
+          ...state,
+          uploadTask: null
+        }));
+      }, async () => {
+        const url = await uploadTask.snapshot.ref.getDownloadURL(); 
+        setState(state => ({
+          ...state,
+          uploadTask: url
+        }));
+        sendFileMessage(url, ref, pathToUpload);
+      });
+    } catch (error) {
+      setState(state => ({
+        ...state,
+        uploadTask: null,
+        percentUploaded: 0
+      }));
+    }
   }
 
   const openModal = () => {
@@ -56,23 +84,35 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel }) => {
     }))
   }
 
+  const createMessage = (fileUrl = null) => {
+    let obj = {};
+    if (fileUrl) {
+      obj.image = fileUrl;
+    } else {
+      obj.content = state.values.message;
+    }
+    console.log(obj);
+    const newMessage = {
+      ...obj,
+      timestamp: firebase.database.ServerValue.TIMESTAMP,
+      user: {
+        avatar: currentUser.photoURL,
+        id: currentUser.uid,
+        name: currentUser.displayName
+      }
+    };
+    console.log(newMessage);
+    return newMessage;
+  };
+
   const sendMessage = async() => {
     try {
       setState(state => ({
         ...state,
         loading: true
       }));
-      const newMessage = {
-        content: state.values.message,
-        timestamp: firebase.database.ServerValue.TIMESTAMP,
-        user: {
-          avatar: currentUser.photoURL,
-          id: currentUser.uid,
-          name: currentUser.displayName
-        }
-      };
       const key = currentChannel.id;
-      await messagesRef.child(key).push().set(newMessage);
+      await messagesRef.child(key).push().set(createMessage());
       setState(state =>  ({
         ...state,
         loading: false,
