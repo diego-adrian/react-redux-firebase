@@ -51,7 +51,7 @@ const Messages = ({ currentUser, currentChannel }) => {
 
   return (
     <Fragment>
-      <MessagesHeader/>
+      <MessagesHeader channel={currentChannel}/>
       <Segment style={{ marginRight: 0, paddingRight: 0}}>
         <Comment.Group className="messages">
           <DisplayMessages/>

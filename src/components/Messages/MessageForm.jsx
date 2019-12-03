@@ -3,6 +3,7 @@ import {Segment, Button, Input} from 'semantic-ui-react';
 import uuidv4 from 'uuid/v4';
 import firebase from '../../firebase';
 import FileModal from './FileModal';
+import ProgressBar from './ProgressBar';
 
 const MessageForm = ({ currentUser, messagesRef, currentChannel }) => {
   const [state, setState] = useState({
@@ -41,6 +42,10 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel }) => {
       const ref = messagesRef;
       const filePath = `chat/public/${uuidv4()}.jpg`;
       const uploadTask = state.storageRef.child(filePath).put(file, metadata);
+      setState(state => ({
+        ...state,
+        uploadTask: uploadTask
+      }));
       uploadTask.on('state_changed', snap => {
         const percentUploaded = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
         setState(state => ({
@@ -177,12 +182,20 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel }) => {
           labelPosition="right"
           icon="cloud upload"
         />
-        <FileModal
-          modal={state.modal}
-          closeModal={closeModal}
-          uploadFile={uploadFile}
-        />
       </Button.Group>
+      <FileModal
+        modal={state.modal}
+        closeModal={closeModal}
+        uploadFile={uploadFile}
+      />
+      {
+        state.uploadTask && 
+        <ProgressBar
+          uploadState={state.uploadState}
+          uploadTask={state.uploadTask}
+          percentUploaded={state.percentUploaded}
+        ></ProgressBar>
+      }
     </Segment>
   )
 };

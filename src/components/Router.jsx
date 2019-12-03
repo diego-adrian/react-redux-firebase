@@ -39,7 +39,7 @@ const Pages = props => {
     };
   }, []);
   return(
-    props.isLoading ? <Spinner/> : 
+    props.isLoading ? <Spinner message="Preparing chat..."/> : 
     <Switch>
       <Route path="/" exact component={App}></Route>
       <Route path="/login" component={Login}></Route>

@@ -1,13 +1,13 @@
 import React from 'react';
 import { Header, Segment, Input, Icon } from 'semantic-ui-react';
 
-const MessagesHeader = () => {
+const MessagesHeader = ({ channel }) => {
   return(
     <Segment clearing>
       {/* Channel title */}
       <Header fluid="true" as="h2" floated="left" style={{ marginBottom: 0}}>
         <span>
-          Channel
+          { channel ? channel.name : '' }
           <Icon name={"star outline"} color="black"></Icon>
         </span>
         <Header.Subheader>
