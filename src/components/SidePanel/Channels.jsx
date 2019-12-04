@@ -7,11 +7,14 @@ import firebase from '../../firebase';
 
 const Channels = ({ user, setCurrentChannel, setPrivateChannel }) => {
   const [state, setState] = useState({
+    channel: null,
     channels: [],
     modal: false,
     firstLoad: true,
     activeChannel: '',
     channelRef: firebase.database().ref('channels'),
+    messagesRef: firebase.database().ref('messages'),
+    notifications: [],
     values: {
       channelName: '',
       channelDetails: '',
@@ -27,29 +30,68 @@ const Channels = ({ user, setCurrentChannel, setPrivateChannel }) => {
     if (state.firstLoad && channels.length > 0) {
       setCurrentChannel(firstChannel);
       setActiveChannel(firstChannel);
+      setState(state => ({
+        ...state,
+        firstLoad: false
+      }));
     }
-    setState(state => ({
-      ...state,
-      firstLoad: false
-    }));
   }
 
   const removeListeners = () => {
     state.channelRef.off();
   }
 
+  const addNotificationListener = channelId => {
+    console.log(state);
+    console.log(channelId);
+    state.messagesRef.child(channelId).on('value', snap => {
+      console.log(state.channel);
+      if (state.channel) {
+        handleNotifications(channelId, state.channel.id, state.notifications, snap);
+      }
+    })
+  };
+  
+  const handleNotifications = (channelId, currentChannelId, notifications, snap) => {
+    let lastTotal = 0;
+    let index = notifications.findIndex(notification => notification.id === channelId);
+    console.log("================= index =====================");
+    if (index !== -1) {
+      if (channelId !== currentChannelId) {
+        lastTotal = notifications[index].total;
+        if (snap.numChildren() - lastTotal > 0) {
+          notifications[index].count = snap.numChildren() - lastTotal;
+        }
+      }
+      notifications[index].lastKnownTotal = snap.numChildren();
+    } else {
+      notifications.push({
+        id: channelId,
+        total: snap.numChildren(),
+        lastKnowTotal: snap.numChildren(),
+        count: 0
+      })
+    }
+    setState(state => ({
+      ...state,
+      notifications
+    }))
+  }
+
   const addListeners = () => {
     let loadedChannels = [];
     state.channelRef.on('child_added', snap => {
       loadedChannels.push(snap.val());
+      console.log('999999999999', [...loadedChannels]);
       setState(state => ({
         ...state,
         channels: loadedChannels
       }));
       setFirstChannel(loadedChannels);
+      addNotificationListener(snap.key);
     })
   };
-
+  
   useEffect(() => {
     addListeners();
     return () => {
@@ -112,6 +154,10 @@ const Channels = ({ user, setCurrentChannel, setPrivateChannel }) => {
     setActiveChannel(channel);
     setCurrentChannel(channel);
     setPrivateChannel(false);
+    setState(state => ({
+      ...state,
+      channel
+    }));
   }
 
   const closeModal = () => {

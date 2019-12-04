@@ -7,6 +7,7 @@ import firebase from '../../firebase';
 
 const DirectMessage = ({ user, setCurrentChannel, setPrivateChannel }) => {
   const [state, setState] = useState({
+    activeChannel: null,
     user: user,
     userRef: firebase.database().ref('users'),
     connectedRef: firebase.database().ref('.info/connected'),
@@ -27,6 +28,13 @@ const DirectMessage = ({ user, setCurrentChannel, setPrivateChannel }) => {
     return userUid < currentUserUid ? `${userUid}/${currentUserUid}` : `${currentUserUid}/${userUid}`;
   };
 
+  const setActiveChannel = userUid => {
+    setState(state => ({
+      ...state,
+      activeChannel: userUid
+    }));
+  };
+
   const changeChannel = user => {
     const channelId = getChannelId(user.uid);
     const channelData = {
@@ -35,12 +43,14 @@ const DirectMessage = ({ user, setCurrentChannel, setPrivateChannel }) => {
     };
     setCurrentChannel(channelData);
     setPrivateChannel(true);
+    setActiveChannel(user.uid);
   };
 
   const ListUsers = () => (
     state.users.map(user => (
       <Menu.Item
         key={user.uid}
+        active={state.activeChannel === user.uid}
         onClick={() => changeChannel(user)}
         style={{ opacity: 0.7, fontStyle: 'italic' }}
       >
