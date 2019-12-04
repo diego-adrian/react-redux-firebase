@@ -2,11 +2,10 @@
 import React, { useState, Fragment, useEffect } from 'react';
 import {Menu, Icon, Modal, Form, Input, Button} from 'semantic-ui-react';
 import { connect } from 'react-redux';
-import { setCurrentChannel } from '../../actions';
+import { setCurrentChannel, setPrivateChannel } from '../../actions';
 import firebase from '../../firebase';
 
-const Channels = props => {
-  const { user } = props;
+const Channels = ({ user, setCurrentChannel, setPrivateChannel }) => {
   const [state, setState] = useState({
     channels: [],
     modal: false,
@@ -26,7 +25,7 @@ const Channels = props => {
   const setFirstChannel = channels => {
     const firstChannel = channels[0];
     if (state.firstLoad && channels.length > 0) {
-      props.setCurrentChannel(firstChannel);
+      setCurrentChannel(firstChannel);
       setActiveChannel(firstChannel);
     }
     setState(state => ({
@@ -111,7 +110,8 @@ const Channels = props => {
 
   const handleCurrentChannel = channel => {
     setActiveChannel(channel);
-    props.setCurrentChannel(channel);
+    setCurrentChannel(channel);
+    setPrivateChannel(false);
   }
 
   const closeModal = () => {
@@ -212,4 +212,4 @@ const Channels = props => {
   )
 };
 
-export default connect(null, { setCurrentChannel })(Channels);
+export default connect(null, { setCurrentChannel, setPrivateChannel })(Channels);

@@ -1,9 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
-import firebase from '../../firebase';
 import { Menu, Icon } from 'semantic-ui-react';
+import { connect } from 'react-redux';
+import { setCurrentChannel, setPrivateChannel } from '../../actions';
+import firebase from '../../firebase';
 
-const DirectMessage = ({ user }) => {
+const DirectMessage = ({ user, setCurrentChannel, setPrivateChannel }) => {
   const [state, setState] = useState({
     user: user,
     userRef: firebase.database().ref('users'),
@@ -27,6 +29,12 @@ const DirectMessage = ({ user }) => {
 
   const changeChannel = user => {
     const channelId = getChannelId(user.uid);
+    const channelData = {
+      id: channelId,
+      name: user.name
+    };
+    setCurrentChannel(channelData);
+    setPrivateChannel(true);
   };
 
   const ListUsers = () => (
@@ -120,4 +128,4 @@ const DirectMessage = ({ user }) => {
   )
 };
 
-export default DirectMessage;
+export default connect(null, { setCurrentChannel, setPrivateChannel })(DirectMessage);

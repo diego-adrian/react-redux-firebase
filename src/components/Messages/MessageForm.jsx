@@ -5,7 +5,7 @@ import firebase from '../../firebase';
 import FileModal from './FileModal';
 import ProgressBar from './ProgressBar';
 
-const MessageForm = ({ currentUser, messagesRef, currentChannel }) => {
+const MessageForm = ({ currentUser, messagesRef, currentChannel, isPrivateChannel, getMessagesRef }) => {
   const [state, setState] = useState({
     storageRef: firebase.storage().ref(),
     loading: false,
@@ -36,11 +36,19 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel }) => {
     }
   }
 
+  const getPath = () => {
+    if (isPrivateChannel) {
+      return `chat/private-${currentChannel.id}`;
+    } else {
+      return 'chat/public';
+    }
+  }
+
   const uploadFile = async (file, metadata) => {
     try {
       const pathToUpload = currentChannel.id;
-      const ref = messagesRef;
-      const filePath = `chat/public/${uuidv4()}.jpg`;
+      const ref = getMessagesRef();
+      const filePath = `${getPath()}/${uuidv4()}.jpg`;
       const uploadTask = state.storageRef.child(filePath).put(file, metadata);
       setState(state => ({
         ...state,
@@ -114,7 +122,7 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel }) => {
         loading: true
       }));
       const key = currentChannel.id;
-      await messagesRef.child(key).push().set(createMessage());
+      await getMessagesRef().child(key).push().set(createMessage());
       setState(state =>  ({
         ...state,
         loading: false,

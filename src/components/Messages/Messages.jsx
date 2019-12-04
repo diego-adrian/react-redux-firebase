@@ -9,12 +9,13 @@ import firebase from '../../firebase';
 
 let timer;
 
-const Messages = ({ currentUser, currentChannel }) => {
+const Messages = ({ currentUser, currentChannel, isPrivateChannel }) => {
   const [state, setState] = useState({
     messages: [],
     messagesLoading: true,
     countUniqueUsers: 0,
     messagesRef: firebase.database().ref('messages'),
+    privateMessagesRef: firebase.database().ref('privateMessages'),
     searchLoading: false,
     searchTerm: null,
     typing: false,
@@ -31,9 +32,12 @@ const Messages = ({ currentUser, currentChannel }) => {
     ))
   );
 
+  const getMessagesRef = () => isPrivateChannel ? state.privateMessagesRef : state.messagesRef;
+
   const addMessageListener = channelId => {
     let loadedMessages = [];
-    state.messagesRef.child(channelId).on('child_added', snap => {
+    const ref = getMessagesRef();
+    ref.child(channelId).on('child_added', snap => {
       loadedMessages.push(snap.val());
       const countUniqueUsers = loadedMessages.reduce((newArray, message) => {
         if (!newArray.includes(message.user.name)) {
@@ -91,7 +95,13 @@ const Messages = ({ currentUser, currentChannel }) => {
 
   return (
     <Fragment>
-      <MessagesHeader channel={currentChannel} countUniqueUsers={state.countUniqueUsers} handleSearchMessages={handleSearchMessages} typing={state.typing}/>
+      <MessagesHeader 
+        channel={currentChannel} 
+        isPrivateChannel={isPrivateChannel} 
+        countUniqueUsers={state.countUniqueUsers} 
+        handleSearchMessages={handleSearchMessages} 
+        typing={state.typing}
+      />
       <Segment style={{ marginRight: 0, paddingRight: 0}}>
         <Comment.Group className="messages">
           {
@@ -99,7 +109,13 @@ const Messages = ({ currentUser, currentChannel }) => {
           }
         </Comment.Group>
       </Segment>
-      <MessageForm currentChannel={currentChannel} messagesRef={state.messagesRef} currentUser={currentUser}/>
+      <MessageForm 
+        currentChannel={currentChannel} 
+        messagesRef={state.messagesRef} 
+        currentUser={currentUser} 
+        isPrivateChannel={isPrivateChannel}
+        getMessagesRef={getMessagesRef}
+      />
     </Fragment>
   )
 };
