@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Segment, Accordion, Header, Icon } from 'semantic-ui-react';
+import { Segment, Accordion, Header, Icon, Image, List } from 'semantic-ui-react';
 
-const MetaPanel = ({ isPrivateChannel }) => {
+const MetaPanel = ({ isPrivateChannel, currentChannel, userPosts }) => {
 
   const [state, setState] = useState({
     activeIndex: 0
@@ -17,11 +17,23 @@ const MetaPanel = ({ isPrivateChannel }) => {
     }));
   }
 
+  const DisplayTopPosters = () => (
+    Object.entries(userPosts).sort((a, b) => b[1]- a[1]).map(([key, val], i) => (
+      <List.Item key={i}>
+        <Image avatar src={val.avatar}/>
+        <List.Content>
+          <List.Header as="a">{key}</List.Header>
+          <List.Description>{val.count} posts</List.Description>
+        </List.Content>
+      </List.Item>
+    ))
+  );
+
   return (
     isPrivateChannel ? null : (
-      <Segment>
+      <Segment loading={!currentChannel}>
         <Header as="h3" attached="top">
-          About # Channel
+          About # { currentChannel && currentChannel.name }
         </Header>
         <Accordion styled attached="true">
           <Accordion.Title
@@ -34,7 +46,7 @@ const MetaPanel = ({ isPrivateChannel }) => {
             Channel Details
           </Accordion.Title>
           <Accordion.Content active={state.activeIndex === 0}>
-            details
+            { currentChannel && currentChannel.details }
           </Accordion.Content>
 
           <Accordion.Title
@@ -47,7 +59,11 @@ const MetaPanel = ({ isPrivateChannel }) => {
             Top Porsters
           </Accordion.Title>
           <Accordion.Content active={state.activeIndex === 1}>
-            details
+            <List>
+              {
+                userPosts && <DisplayTopPosters/>
+              }
+            </List>
           </Accordion.Content>
 
 
@@ -61,10 +77,11 @@ const MetaPanel = ({ isPrivateChannel }) => {
             Created By
           </Accordion.Title>
           <Accordion.Content active={state.activeIndex === 2}>
-            Creator
+            <Header as="h4">
+              <Image circular src={currentChannel && currentChannel.createdBy.avatar}/>
+              {currentChannel && currentChannel.createdBy.name }
+            </Header>
           </Accordion.Content>
-
-
         </Accordion>
       </Segment>
     )
