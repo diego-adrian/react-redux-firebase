@@ -132,7 +132,6 @@ const Messages = ({ currentUser, currentChannel, isPrivateChannel }) => {
           isChannelStarred: prevStarred
         }));
       }
-      
     } catch (error) {
       console.error(error.message);
     }

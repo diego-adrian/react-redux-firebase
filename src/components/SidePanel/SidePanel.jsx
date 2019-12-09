@@ -6,8 +6,7 @@ import Channels from './Channels';
 import DirectMessage from './DirectMessage';
 import Starred from './Starred';
 
-const SidePanel = props => {
-  const { user } = props;
+const SidePanel = ({ user }) => {
   return (
     <Menu
       size="large"
@@ -17,7 +16,7 @@ const SidePanel = props => {
       style={{ background: '#350d36', fontSize: '1.2rem'}}
     >
       <UserPanel user={user}/>
-      <Starred/>
+      <Starred user={user}/>
       <Channels user={user}/>
       <DirectMessage user={user}/>
     </Menu>
