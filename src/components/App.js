@@ -10,7 +10,10 @@ import './App.css';
 const App = ({ currentChannel, currentUser, isPrivateChannel, userPosts }) => {
   return (
     <Grid columns="equal" className="app" style={{ background: '#EEE'}}>
-      <ColorPanel/>
+      <ColorPanel
+        key={currentUser && currentUser.name}
+        currentUser={currentUser}
+      />
       <SidePanel
         key={currentUser && currentUser.uid}
         currentUser={currentUser}
@@ -27,7 +30,7 @@ const App = ({ currentChannel, currentUser, isPrivateChannel, userPosts }) => {
         <MetaPanel 
           currentChannel={currentChannel}
           userPosts={userPosts}
-          key={ currentChannel && currentChannel.id }
+          key={ currentChannel && currentChannel.name }
           isPrivateChannel={isPrivateChannel}/>
       </Grid.Column>
     </Grid>
