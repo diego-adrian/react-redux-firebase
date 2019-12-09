@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import UserPanel from './UserPanel';
 import Channels from './Channels';
 import DirectMessage from './DirectMessage';
+import Starred from './Starred';
 
 const SidePanel = props => {
   const { user } = props;
@@ -16,6 +17,7 @@ const SidePanel = props => {
       style={{ background: '#350d36', fontSize: '1.2rem'}}
     >
       <UserPanel user={user}/>
+      <Starred/>
       <Channels user={user}/>
       <DirectMessage user={user}/>
     </Menu>

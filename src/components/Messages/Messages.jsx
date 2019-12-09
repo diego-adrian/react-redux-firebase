@@ -16,7 +16,9 @@ const Messages = ({ currentUser, currentChannel, isPrivateChannel }) => {
     countUniqueUsers: 0,
     messagesRef: firebase.database().ref('messages'),
     privateMessagesRef: firebase.database().ref('privateMessages'),
+    usersRef: firebase.database().ref('users'),
     searchLoading: false,
+    isChannelStarred: false,
     searchTerm: null,
     typing: false,
     searchResults: []
@@ -31,6 +33,41 @@ const Messages = ({ currentUser, currentChannel, isPrivateChannel }) => {
       />
     ))
   );
+
+  const handleStar = () => {
+    const isChannelStarred = !state.isChannelStarred;
+    setState(state => ({
+      ...state,
+      isChannelStarred: isChannelStarred
+    }));
+    startChannel(isChannelStarred);
+  };
+
+  const startChannel = (isChannelStarred) => {
+    if (isChannelStarred) {
+      state.usersRef.child(`${currentUser.uid}/starred`).update({
+        [currentChannel.id]: {
+          name: currentChannel.name,
+          details: currentChannel.details,
+          createdBy: {
+            name: currentChannel.createdBy.name,
+            avatar: currentChannel.createdBy.avatar
+          }          
+        }
+      });
+    } else {
+      state.usersRef.child(`${currentUser.uid}/starred`).child(currentChannel.id).remove(err => {
+        if (err !== null) {
+          console.log(err);
+        }
+      })
+    }
+  };
+
+  const removeListener = () => {
+    state.messagesRef.off();
+    state.privateMessagesRef.off();
+  }
 
   const getMessagesRef = () => isPrivateChannel ? state.privateMessagesRef : state.messagesRef;
 
@@ -84,11 +121,30 @@ const Messages = ({ currentUser, currentChannel, isPrivateChannel }) => {
     addMessageListener(channelId);
   };
 
+  const addUserStarsListener = async(channelId, userUid) => {
+    try {
+      const data = await state.usersRef.child(userUid).child('starred').once('value');
+      if (data.val() !== null) {
+        const channelIds = Object.keys(data.val());
+        const prevStarred = channelIds.includes(channelId);
+        setState(state => ({
+          ...state,
+          isChannelStarred: prevStarred
+        }));
+      }
+      
+    } catch (error) {
+      console.error(error.message);
+    }
+  };
+
   useEffect(() => {
     if (currentUser && currentChannel) {
       addListeners(currentChannel.id);
+      addUserStarsListener(currentChannel.id, currentUser.uid);
     }
     return () => {
+      removeListener();
       console.log('UNMOUNT MESSAGES');
     }
   }, []);
@@ -101,6 +157,8 @@ const Messages = ({ currentUser, currentChannel, isPrivateChannel }) => {
         countUniqueUsers={state.countUniqueUsers} 
         handleSearchMessages={handleSearchMessages} 
         typing={state.typing}
+        handleStar={handleStar}
+        isChannelStarred={state.isChannelStarred}
       />
       <Segment style={{ marginRight: 0, paddingRight: 0}}>
         <Comment.Group className="messages">
