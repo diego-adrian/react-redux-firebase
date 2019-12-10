@@ -18,6 +18,8 @@ const Messages = ({ currentUser, currentChannel, isPrivateChannel, setUserPosts 
 
   const [bottom, setBottom] = useState(false);
 
+  const [isTyping, setTyping] = useState(false);
+
   const [state, setState] = useState({
     messages: [],
     messagesLoading: true,
@@ -143,13 +145,21 @@ const Messages = ({ currentUser, currentChannel, isPrivateChannel, setUserPosts 
     }));
   };
   
-  const DisplayTypingUsers = () => (
-    state.typingUsers.length > 0 && state.typingUsers.map((user, i) => (
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.2em' }} key={i}>
-        <span className="user__typing"> {user.name} is typing</span> <Typing />
-      </div>
-    ))
-  );
+  const DisplayTypingUsers = () => {
+    if (state.typingUsers.length > 0) {
+      setTyping(true);
+    } else {
+      setTyping(false);
+    }
+    return (
+      state.typingUsers.length > 0 && state.typingUsers.map((user, i) => (
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.2em' }} key={i}>
+          <span className="user__typing"> {user.name} is typing</span> <Typing />
+        </div>
+      ))
+    );
+  }
+  
 
   const addListeners = channelId => {
     addMessageListener(channelId);
@@ -223,9 +233,18 @@ const Messages = ({ currentUser, currentChannel, isPrivateChannel, setUserPosts 
       scrollToBottom();
     }
     return () => {
-      console.info('UNMOUNT MESSAGES SCROLLINTOVIEW');
+      console.info('UNMOUNT MESSAGES SCROLLINTOVIEW - BOTTOM');
     }
   }, [bottom]);
+
+  useEffect(() => {
+    if (isTyping) {
+      scrollToBottom();
+    }
+    return () => {
+      console.info('UNMOUNT MESSAGES SCROLLINTOVIEW - TYPING');
+    }
+  }, [isTyping]);
 
   const scrollToBottom = () => {
     setTimeout(() => {
