@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import {Segment, Button, Input} from 'semantic-ui-react';
 import uuidv4 from 'uuid/v4';
+import { Picker, emojiIndex } from 'emoji-mart';
 import firebase from '../../firebase';
 import FileModal from './FileModal';
 import ProgressBar from './ProgressBar';
+import 'emoji-mart/css/emoji-mart.css';
 
 const MessageForm = ({ currentUser, messagesRef, currentChannel, isPrivateChannel, getMessagesRef }) => {
   const [state, setState] = useState({
@@ -14,6 +16,7 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel, isPrivateChanne
     percentUploaded: 0,
     uploadState: 'uploading',
     uploadTask: null,
+    emojiPicker: false,
     values: {
       message: ''
     },
@@ -97,6 +100,41 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel, isPrivateChanne
     }))
   }
 
+  const handleAddEmoji = emoji => {
+    const oldMessage = state.values.message;
+    const newMessage = colonToUnicode(` ${oldMessage} ${emoji.colons} `);
+    setState(state => ({
+      ...state,
+      values: {
+        ...state.values,
+        message: newMessage,
+      },
+      emojiPicker: false
+    }));
+  };
+
+  const colonToUnicode = message => {
+    return message.replace(/:[A-Za-z0-9_+-]+:/g, x => {
+      x = x.replace(/:/g, '');
+      let emoji = emojiIndex.emojis[x];
+      if (typeof emoji !== undefined) {
+        let unicode = emoji.native;
+        if (typeof unicode !== undefined) {
+          return unicode;
+        }
+      }
+      x = ':' + x + ':';
+      return x;
+    });
+  };
+
+  const handleTogglePicker = () => {
+    setState(state => ({
+      ...state,
+      emojiPicker: !state.emojiPicker
+    }));
+  }
+
   const createMessage = (fileUrl = null) => {
     let obj = {};
     if (fileUrl) {
@@ -172,6 +210,17 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel, isPrivateChanne
 
   return(
     <Segment className="message__form">
+      {
+        state.emojiPicker && (
+          <Picker
+            onSelect={handleAddEmoji}
+            set="apple"
+            className="emojipicker"
+            title="Pick your emoji"
+            emoji="point_up"
+          />
+        )
+      }
       <Input
         fluid
         name="message"
@@ -180,7 +229,13 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel, isPrivateChanne
         onKeyUp={handleKeyUp}
         onChange={handleChange}
         style={{ marginBottom: '0.7em'}}
-        label={<Button icon={'add'}></Button>}
+        label={
+          <Button 
+            icon={state.emojiPicker ? 'close' :'add'} 
+            content={state.emojiPicker ? 'Close' : null}
+            onClick={handleTogglePicker}
+          />
+        }
         labelPosition="left"
         placeholder="Write your message"
       />

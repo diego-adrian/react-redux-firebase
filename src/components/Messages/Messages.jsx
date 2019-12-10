@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { Fragment, useState, useEffect } from 'react';
+import React, { Fragment, useState, useEffect, useRef } from 'react';
 import { Segment, Comment } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import MessagesHeader from './MessagesHeader';
@@ -13,6 +13,11 @@ import Typing from './Typing';
 let timer;
 
 const Messages = ({ currentUser, currentChannel, isPrivateChannel, setUserPosts }) => {
+
+  const messagesEnd = useRef();
+
+  const [bottom, setBottom] = useState(false);
+
   const [state, setState] = useState({
     messages: [],
     messagesLoading: true,
@@ -102,7 +107,7 @@ const Messages = ({ currentUser, currentChannel, isPrivateChannel, setUserPosts 
       }, {});
       
       setUserPosts(countUserPost);
-
+      setBottom(true);
       setState(state => ({
         ...state,
         messages: loadedMessages,
@@ -139,8 +144,8 @@ const Messages = ({ currentUser, currentChannel, isPrivateChannel, setUserPosts 
   };
   
   const DisplayTypingUsers = () => (
-    state.typingUsers.length > 0 && state.typingUsers.map(user => (
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.2em' }} key={user.uid}>
+    state.typingUsers.length > 0 && state.typingUsers.map((user, i) => (
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.2em' }} key={i}>
         <span className="user__typing"> {user.name} is typing</span> <Typing />
       </div>
     ))
@@ -213,6 +218,25 @@ const Messages = ({ currentUser, currentChannel, isPrivateChannel, setUserPosts 
     }
   }, []);
 
+  useEffect(() => {
+    if (bottom) {
+      scrollToBottom();
+    }
+    return () => {
+      console.info('UNMOUNT MESSAGES SCROLLINTOVIEW');
+    }
+  }, [bottom]);
+
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      messagesEnd.current.scrollIntoView({
+        block: 'end',
+        behavior: 'smooth'
+      });
+      setBottom(false);
+    }, 300);
+  }
+
   return (
     <Fragment>
       <MessagesHeader 
@@ -230,6 +254,7 @@ const Messages = ({ currentUser, currentChannel, isPrivateChannel, setUserPosts 
             state.searchTerm ? <DisplayMessages messages={state.searchResults} /> : <DisplayMessages messages={state.messages} />
           }
           <DisplayTypingUsers/>
+          <div ref={messagesEnd}></div>
         </Comment.Group>
       </Segment>
       <MessageForm 
