@@ -9,6 +9,7 @@ import Message from './Message';
 import { setUserPosts } from '../../actions';
 import firebase from '../../firebase';
 import Typing from './Typing';
+import Skeleton from './Skeleton';
 
 let timer;
 
@@ -201,6 +202,18 @@ const Messages = ({ currentUser, currentChannel, isPrivateChannel, setUserPosts 
     });
   }
 
+  const DisplayMessageSkeleton = () => (
+    state.messagesLoading ? (
+      <Fragment>
+        {
+          [...Array(10)].map((_, i) => (
+            <Skeleton key={i}/>
+          ))
+        }
+      </Fragment>
+    ) : null
+  );
+
   const addUserStarsListener = async(channelId, userUid) => {
     try {
       const data = await state.usersRef.child(userUid).child('starred').once('value');
@@ -269,6 +282,7 @@ const Messages = ({ currentUser, currentChannel, isPrivateChannel, setUserPosts 
       />
       <Segment style={{ marginRight: 0, paddingRight: 0}}>
         <Comment.Group className="messages">
+          <DisplayMessageSkeleton/>
           {
             state.searchTerm ? <DisplayMessages messages={state.searchResults} /> : <DisplayMessages messages={state.messages} />
           }
