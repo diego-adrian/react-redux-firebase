@@ -8,6 +8,7 @@ import ProgressBar from './ProgressBar';
 const MessageForm = ({ currentUser, messagesRef, currentChannel, isPrivateChannel, getMessagesRef }) => {
   const [state, setState] = useState({
     storageRef: firebase.storage().ref(),
+    typingRef: firebase.database().ref('typing'),
     loading: false,
     modal: false,
     percentUploaded: 0,
@@ -123,6 +124,7 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel, isPrivateChanne
       }));
       const key = currentChannel.id;
       await getMessagesRef().child(key).push().set(createMessage());
+      state.typingRef.child(currentChannel.id).child(currentUser.uid).remove();
       setState(state =>  ({
         ...state,
         loading: false,
@@ -140,6 +142,14 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel, isPrivateChanne
       console.error(error.message);
     }
   };
+
+  const handleKeyUp = event => {
+    if (event.target.value.length > 0) {
+      state.typingRef.child(currentChannel.id).child(currentUser.uid).set(currentUser.displayName);
+    } else {
+      state.typingRef.child(currentChannel.id).child(currentUser.uid).remove();
+    }
+  }
 
   const handleChange = event => {
     event.persist();
@@ -167,6 +177,7 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel, isPrivateChanne
         name="message"
         error={state.errors.message && state.touched.message}
         value={state.values.message}
+        onKeyUp={handleKeyUp}
         onChange={handleChange}
         style={{ marginBottom: '0.7em'}}
         label={<Button icon={'add'}></Button>}

@@ -17,6 +17,7 @@ const Channels = ({ user, setCurrentChannel, setPrivateChannel }) => {
     activeChannel: '',
     channelRef: firebase.database().ref('channels'),
     messagesRef: firebase.database().ref('messages'),
+    typingRef: firebase.database().ref('typing'),
     notifications: [],
     values: {
       channelName: '',
@@ -165,6 +166,7 @@ const Channels = ({ user, setCurrentChannel, setPrivateChannel }) => {
 
   const handleCurrentChannel = channel => {
     setActiveChannel(channel);
+    state.typingRef.child(state.channel.id).child(user.uid).remove();
     clearNotifications();
     setCurrentChannel(channel);
     setPrivateChannel(false);

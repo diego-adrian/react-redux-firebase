@@ -1,15 +1,39 @@
-import React, { useState } from 'react';
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { Fragment, useState, useEffect } from 'react';
 import { Sidebar, Menu, Divider, Button, Modal, Icon, Label, Segment } from 'semantic-ui-react';
 import { SliderPicker } from 'react-color';
+import { connect } from 'react-redux';
 import firebase from '../../firebase';
-const ColorPanel = ({ currentUser }) => {
+import { setColors } from '../../actions';
+const ColorPanel = ({ currentUser, setColors }) => {
   
   const [state, setState] =  useState({
     modal: false,
     primary: '',
     secondary: '',
+    userColors: [],
     usersRef: firebase.database().ref('users')
   });
+
+  const addListener = userUid => {
+    let userColors = [];
+    state.usersRef.child(`${userUid}/colors`).on('child_added', snap => {
+      userColors.unshift(snap.val());
+      setState(state => ({
+        ...state,
+        userColors
+      }));
+    })
+  };
+
+  useEffect(() => {
+    if (currentUser) {
+      addListener(currentUser.uid);
+    }
+    return () => {
+      console.log('UNMOUNT COLOR PANEL');
+    }
+  }, []);
 
   const handleChangePrimary = color => setState(state => ({
     ...state,
@@ -37,6 +61,19 @@ const ColorPanel = ({ currentUser }) => {
     }
   };
 
+  const DisplayUserColor = () => (
+    state.userColors.length > 0 && state.userColors.map((color, i) => (
+      <Fragment key={i}>
+        <Divider/>
+        <div className="color__container" onClick={() => setColors(color.primary, color.secondary)}>
+          <div className="color__square" style={{ background: color.primary }}>
+            <div className="color__overlay" style={{ background: color.secondary }}></div>
+          </div>
+        </div>
+      </Fragment>
+    ))
+  )
+
   const saveColors = async(primary, secondary) => {
     try {
       await state.usersRef.child(`${currentUser.uid}/colors`).push().update({
@@ -60,7 +97,7 @@ const ColorPanel = ({ currentUser }) => {
     >
       <Divider/>
       <Button icon="add" size="small" color="blue" onClick={openModal}></Button>
-
+      <DisplayUserColor/>
       {/* Color Picker Modal */}
       <Modal basic open={state.modal} onClose={closeModal}>
         <Modal.Header>Choose App Colors</Modal.Header>
@@ -87,4 +124,4 @@ const ColorPanel = ({ currentUser }) => {
   )
 };
 
-export default ColorPanel;
+export default connect(null, { setColors })(ColorPanel);

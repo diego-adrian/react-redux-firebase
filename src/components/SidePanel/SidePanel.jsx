@@ -6,16 +6,16 @@ import Channels from './Channels';
 import DirectMessage from './DirectMessage';
 import Starred from './Starred';
 
-const SidePanel = ({ user }) => {
+const SidePanel = ({ user, primaryColor }) => {
   return (
     <Menu
       size="large"
       inverted
       fixed="left"
       vertical
-      style={{ background: '#350d36', fontSize: '1.2rem'}}
+      style={{ background: primaryColor, fontSize: '1.2rem'}}
     >
-      <UserPanel user={user}/>
+      <UserPanel primaryColor={primaryColor} user={user}/>
       <Starred user={user}/>
       <Channels user={user}/>
       <DirectMessage user={user}/>

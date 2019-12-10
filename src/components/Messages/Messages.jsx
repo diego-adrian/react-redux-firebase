@@ -8,6 +8,7 @@ import MessageForm from './MessageForm';
 import Message from './Message';
 import { setUserPosts } from '../../actions';
 import firebase from '../../firebase';
+import Typing from './Typing';
 
 let timer;
 
@@ -19,6 +20,9 @@ const Messages = ({ currentUser, currentChannel, isPrivateChannel, setUserPosts 
     messagesRef: firebase.database().ref('messages'),
     privateMessagesRef: firebase.database().ref('privateMessages'),
     usersRef: firebase.database().ref('users'),
+    typingRef: firebase.database().ref('typing'),
+    connectedRef: firebase.database().ref('.info/connected'),
+    typingUsers: [],
     searchLoading: false,
     isChannelStarred: false,
     searchTerm: null,
@@ -134,9 +138,53 @@ const Messages = ({ currentUser, currentChannel, isPrivateChannel, setUserPosts 
     }));
   };
   
+  const DisplayTypingUsers = () => (
+    state.typingUsers.length > 0 && state.typingUsers.map(user => (
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.2em' }} key={user.uid}>
+        <span className="user__typing"> {user.name} is typing</span> <Typing />
+      </div>
+    ))
+  );
+
   const addListeners = channelId => {
     addMessageListener(channelId);
+    addTypingListeners(channelId);
   };
+
+  const addTypingListeners = channelId => {
+    let typingUsers = [];
+    state.typingRef.child(channelId).on('child_added', snap => {
+      if (snap.key !== currentUser.uid) {
+        typingUsers = typingUsers.concat({
+          id: snap.key,
+          name: snap.val()
+        });
+        setState(state => ({
+          ...state,
+          typingUsers
+        })); 
+      }
+    });
+    state.typingRef.child(channelId).on('child_removed', snap => {
+      const index = typingUsers.findIndex(user => user.id === snap.key);
+      if (index !== -1) {
+        typingUsers = typingUsers.filter(user => user.id !== snap.key);
+        setState(state => ({
+          ...state,
+          typingUsers
+        }));
+      }
+    });
+    state.connectedRef.on('value', snap => {
+      if (snap.val() === true) {
+        state.typingRef.child(channelId).child(currentUser.uid).onDisconnect().remove(err => {
+          if (err !== null) {
+            console.error(err.message);
+          }
+        });
+      }
+    });
+  }
 
   const addUserStarsListener = async(channelId, userUid) => {
     try {
@@ -181,6 +229,7 @@ const Messages = ({ currentUser, currentChannel, isPrivateChannel, setUserPosts 
           {
             state.searchTerm ? <DisplayMessages messages={state.searchResults} /> : <DisplayMessages messages={state.messages} />
           }
+          <DisplayTypingUsers/>
         </Comment.Group>
       </Segment>
       <MessageForm 
