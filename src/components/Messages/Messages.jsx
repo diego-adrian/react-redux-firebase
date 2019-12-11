@@ -81,6 +81,8 @@ const Messages = ({ currentUser, currentChannel, isPrivateChannel, setUserPosts 
   const removeListener = () => {
     state.messagesRef.off();
     state.privateMessagesRef.off();
+    state.usersRef.off();
+    state.typingRef.off();
   }
 
   const getMessagesRef = () => isPrivateChannel ? state.privateMessagesRef : state.messagesRef;

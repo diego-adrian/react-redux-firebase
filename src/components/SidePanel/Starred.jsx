@@ -40,11 +40,18 @@ const Starred = ({ user }) => {
     })
   };
 
+  const removeListener = userUid => {
+    state.usersRef.child(userUid).child('starred').off();
+  }
+
   useEffect(() => {
     if (user) {
       addListeners(user.uid);
     }
     return () => {
+      if (user) {
+        removeListener(user.uid);
+      }
       console.log('UNMOUNT STARRED');
     };
   }, []);

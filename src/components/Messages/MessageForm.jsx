@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {Segment, Button, Input} from 'semantic-ui-react';
 import uuidv4 from 'uuid/v4';
 import { Picker, emojiIndex } from 'emoji-mart';
@@ -27,6 +27,18 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel, isPrivateChanne
       message: false
     }
   });
+
+  useEffect(() => {
+    return () => {
+      if (state.uploadTask !== null) {
+        state.uploadTask.cancel();
+        setState(state => ({
+          ...state,
+          uploadTask: null
+        }));
+      }
+    }
+  }, [state.uploadTask]);
 
   const sendFileMessage = async (fileUrl, ref, pathToUpload) => {
     try {
@@ -182,6 +194,11 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel, isPrivateChanne
   };
 
   const handleKeyUp = event => {
+
+    if (event.ctrlKey && event.keyCode === 13) {
+      sendMessage();
+    }
+
     if (event.target.value.length > 0) {
       state.typingRef.child(currentChannel.id).child(currentUser.uid).set(currentUser.displayName);
     } else {

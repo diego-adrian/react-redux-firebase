@@ -26,11 +26,16 @@ const ColorPanel = ({ currentUser, setColors }) => {
     })
   };
 
+  const removeListener = () => {
+    state.usersRef.child(`${currentUser.uid}/colors`).off();
+  };
+
   useEffect(() => {
     if (currentUser) {
       addListener(currentUser.uid);
     }
     return () => {
+      removeListener();
       console.log('UNMOUNT COLOR PANEL');
     }
   }, []);
