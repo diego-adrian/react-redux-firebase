@@ -31,7 +31,7 @@ const MessageForm = ({ currentUser, messagesRef, currentChannel, isPrivateChanne
   useEffect(() => {
     return () => {
       if (state.uploadTask !== null) {
-        state.uploadTask.cancel();
+        // state.uploadTask.cancel();
         setState(state => ({
           ...state,
           uploadTask: null
